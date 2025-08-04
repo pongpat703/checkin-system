@@ -352,11 +352,9 @@
                 </div>
             </div>
 
-            <!-- Date Range Summary Section -->
             <div id="rangeSummarySection" class="summary-section" style="display: none; background: linear-gradient(45deg, #f3e5f5, #e1bee7);">
                 <div class="summary-title" style="color: #7B1FA2;">สรุปข้อมูลช่วงวันที่</div>
                 
-                <!-- Date Range Selection -->
                 <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
                     <div>
                         <label style="display: block; margin-bottom: 5px; font-weight: 600;">วันที่เริ่มต้น:</label>
@@ -371,7 +369,6 @@
                     </div>
                 </div>
 
-                <!-- Range Summary Cards -->
                 <div class="summary-grid">
                     <div class="summary-card">
                         <div class="summary-number" id="rangeCheckins">0</div>
@@ -391,11 +388,9 @@
                     </div>
                 </div>
 
-                <!-- Detailed breakdown by employee -->
                 <div id="employeeBreakdown" style="margin-top: 20px;">
                     <h3 style="color: #7B1FA2; margin-bottom: 15px;">รายละเอียดตามพนักงาน</h3>
                     <div id="employeeBreakdownContent" style="display: grid; gap: 10px;">
-                        <!-- Employee breakdown will be inserted here -->
                     </div>
                 </div>
             </div>
@@ -416,295 +411,6 @@
         </div>
     </div>
 
-    <script>
-        let checkinRecords = JSON.parse(localStorage.getItem('checkinRecords')) || [];
-        let editingIndex = -1;
-
-        // ตั้งค่าวันที่เป็นวันปัจจุบัน
-        document.getElementById('checkinDate').valueAsDate = new Date();
-        
-        // โหลดข้อมูลเมื่อเปิดหน้า
-        window.addEventListener('load', function() {
-            updateRecordsTable();
-        });
-
-        // ฟังก์ชันบันทึกเวลาปัจจุบัน
-        function setCurrentDateTime() {
-            const now = new Date();
-            document.getElementById('checkinDate').valueAsDate = now;
-            alert('ตั้งค่าเวลาเป็นปัจจุบันแล้ว: ' + now.toLocaleString('th-TH'));
-        }
-
-        // ฟังก์ชันบันทึกข้อมูล
-        document.getElementById('checkinForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const employeeName = document.getElementById('employeeName').value;
-            const checkinDate = document.getElementById('checkinDate').value;
-            const manday = document.getElementById('manday').checked;
-            const traveling = document.getElementById('traveling').checked;
-            const timestamp = new Date().toLocaleString('th-TH');
-
-            const record = {
-                employeeName,
-                checkinDate,
-                manday,
-                traveling,
-                timestamp
-            };
-
-            if (editingIndex >= 0) {
-                checkinRecords[editingIndex] = record;
-                editingIndex = -1;
-                document.querySelector('.btn-primary').textContent = 'บันทึกข้อมูล';
-            } else {
-                checkinRecords.push(record);
-            }
-
-            // บันทึกลง Local Storage
-            localStorage.setItem('checkinRecords', JSON.stringify(checkinRecords));
-
-            updateRecordsTable();
-            clearForm();
-            alert('บันทึกข้อมูลเรียบร้อยแล้ว!');
-        });
-
-        // ฟังก์ชันล้างฟอร์ม
-        function clearForm() {
-            document.getElementById('employeeName').value = '';
-            document.getElementById('checkinDate').valueAsDate = new Date();
-            document.getElementById('manday').checked = false;
-            document.getElementById('traveling').checked = false;
-        }
-
-        // ฟังก์ชันอัพเดทตาราง
-        function updateRecordsTable() {
-            const tbody = document.getElementById('recordsTableBody');
-            tbody.innerHTML = '';
-
-            checkinRecords.forEach((record, index) => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${record.employeeName}</td>
-                    <td>${new Date(record.checkinDate).toLocaleDateString('th-TH')}</td>
-                    <td>${record.manday ? '✅' : '❌'}</td>
-                    <td>${record.traveling ? '✅' : '❌'}</td>
-                    <td>${record.timestamp}</td>
-                    <td>
-                        <button class="edit-btn" onclick="editRecord(${index})">แก้ไข</button>
-                        <button class="delete-btn" onclick="deleteRecord(${index})">ลบ</button>
-                    </td>
-                `;
-            });
-        }
-
-        // ฟังก์ชันแก้ไขข้อมูล
-        function editRecord(index) {
-            const record = checkinRecords[index];
-            document.getElementById('employeeName').value = record.employeeName;
-            document.getElementById('checkinDate').value = record.checkinDate;
-            document.getElementById('manday').checked = record.manday;
-            document.getElementById('traveling').checked = record.traveling;
-            
-            editingIndex = index;
-            document.querySelector('.btn-primary').textContent = 'อัพเดทข้อมูล';
-            
-            // เลื่อนไปที่ฟอร์ม
-            document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // ฟังก์ชันลบข้อมูล
-        function deleteRecord(index) {
-            if (confirm('คุณต้องการลบข้อมูลนี้หรือไม่?')) {
-                checkinRecords.splice(index, 1);
-                localStorage.setItem('checkinRecords', JSON.stringify(checkinRecords));
-                updateRecordsTable();
-                alert('ลบข้อมูลเรียบร้อยแล้ว!');
-            }
-        }
-
-        // ฟังก์ชันแสดงสรุปข้อมูล
-        function showSummary() {
-            const summarySection = document.getElementById('summarySection');
-            const selectedDate = document.getElementById('checkinDate').value;
-            
-            if (!selectedDate) {
-                alert('กรุณาเลือกวันที่ที่ต้องการดูสรุป');
-                return;
-            }
-
-            // กรองข้อมูลตามวันที่ที่เลือก
-            const dateRecords = checkinRecords.filter(record => record.checkinDate === selectedDate);
-            
-            const totalCheckins = dateRecords.length;
-            const totalMandays = dateRecords.filter(record => record.manday).length;
-            const totalTraveling = dateRecords.filter(record => record.traveling).length;
-
-            document.getElementById('totalCheckins').textContent = totalCheckins;
-            document.getElementById('totalMandays').textContent = totalMandays;
-            document.getElementById('totalTraveling').textContent = totalTraveling;
-
-            summarySection.style.display = 'block';
-            summarySection.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // ฟังก์ชันแสดงสรุปข้อมูลช่วงวันที่
-        function showRangeSummary() {
-            const rangeSummarySection = document.getElementById('rangeSummarySection');
-            const summarySection = document.getElementById('summarySection');
-            
-            // ซ่อนสรุปรายวัน
-            summarySection.style.display = 'none';
-            
-            // แสดงส่วนสรุปช่วงวันที่
-            rangeSummarySection.style.display = 'block';
-            
-            // ตั้งค่าวันที่เริ่มต้นเป็น 7 วันที่แล้ว และวันสิ้นสุดเป็นวันนี้
-            const today = new Date();
-            const weekAgo = new Date(today);
-            weekAgo.setDate(today.getDate() - 7);
-            
-            document.getElementById('startDate').valueAsDate = weekAgo;
-            document.getElementById('endDate').valueAsDate = today;
-            
-            // คำนวณทันที
-            calculateRangeSummary();
-            
-            rangeSummarySection.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // ฟังก์ชันคำนวณสรุปช่วงวันที่
-        function calculateRangeSummary() {
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            
-            if (!startDate || !endDate) {
-                alert('กรุณาเลือกวันที่เริ่มต้นและสิ้นสุด');
-                return;
-            }
-            
-            if (new Date(startDate) > new Date(endDate)) {
-                alert('วันที่เริ่มต้นต้องไม่เกินวันที่สิ้นสุด');
-                return;
-            }
-            
-            // กรองข้อมูลตามช่วงวันที่
-            const rangeRecords = checkinRecords.filter(record => {
-                const recordDate = new Date(record.checkinDate);
-                return recordDate >= new Date(startDate) && recordDate <= new Date(endDate);
-            });
-            
-            // คำนวณสรุปรวม
-            const totalCheckins = rangeRecords.length;
-            const totalMandays = rangeRecords.filter(record => record.manday).length;
-            const totalTraveling = rangeRecords.filter(record => record.traveling).length;
-            
-            // คำนวณจำนวนวัน
-            const daysDiff = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
-            
-            // อัพเดทการแสดงผล
-            document.getElementById('rangeCheckins').textContent = totalCheckins;
-            document.getElementById('rangeMandays').textContent = totalMandays;
-            document.getElementById('rangeTraveling').textContent = totalTraveling;
-            document.getElementById('rangeDays').textContent = daysDiff;
-            
-            // สร้างรายละเอียดตามพนักงาน
-            createEmployeeBreakdown(rangeRecords);
-        }
-
-        // ฟังก์ชันสร้างรายละเอียดตามพนักงาน
-        function createEmployeeBreakdown(rangeRecords) {
-            const employeeBreakdownContent = document.getElementById('employeeBreakdownContent');
-            
-            // จัดกลุ่มข้อมูลตามพนักงาน
-            const employeeStats = {};
-            
-            rangeRecords.forEach(record => {
-                if (!employeeStats[record.employeeName]) {
-                    employeeStats[record.employeeName] = {
-                        checkins: 0,
-                        mandays: 0,
-                        traveling: 0
-                    };
-                }
-                
-                employeeStats[record.employeeName].checkins++;
-                if (record.manday) employeeStats[record.employeeName].mandays++;
-                if (record.traveling) employeeStats[record.employeeName].traveling++;
-            });
-            
-            // สร้าง HTML สำหรับแสดงผล
-            let html = '';
-            
-            if (Object.keys(employeeStats).length === 0) {
-                html = '<p style="text-align: center; color: #666; padding: 20px;">ไม่มีข้อมูลในช่วงวันที่ที่เลือก</p>';
-            } else {
-                // Header
-                html += `
-                    <div class="employee-card" style="background: linear-gradient(45deg, #9C27B0, #673AB7); color: white;">
-                        <div class="employee-name">ชื่อพนักงาน</div>
-                        <div style="text-align: center; font-weight: bold;">Check In</div>
-                        <div style="text-align: center; font-weight: bold;">Manday</div>
-                        <div style="text-align: center; font-weight: bold;">Traveling</div>
-                    </div>
-                `;
-                
-                // Data rows
-                Object.entries(employeeStats)
-                    .sort(([a], [b]) => a.localeCompare(b, 'th'))
-                    .forEach(([name, stats]) => {
-                        html += `
-                            <div class="employee-card">
-                                <div class="employee-name">${name}</div>
-                                <div class="employee-stat stat-checkin">${stats.checkins}</div>
-                                <div class="employee-stat stat-manday">${stats.mandays}</div>
-                                <div class="employee-stat stat-travel">${stats.traveling}</div>
-                            </div>
-                        `;
-                    });
-            }
-            
-            employeeBreakdownContent.innerHTML = html;
-        }
-
-        // ฟังก์ชัน Export ข้อมูล
-        function exportData() {
-            if (checkinRecords.length === 0) {
-                alert('ไม่มีข้อมูลสำหรับ Export');
-                return;
-            }
-
-            let csvContent = "ชื่อพนักงาน,วันที่,Manday,Traveling,เวลาบันทึก\n";
-            
-            checkinRecords.forEach(record => {
-                const row = [
-                    `"${record.employeeName}"`,
-                    `"${new Date(record.checkinDate).toLocaleDateString('th-TH')}"`,
-                    record.manday ? 'ใช่' : 'ไม่ใช่',
-                    record.traveling ? 'ใช่' : 'ไม่ใช่',
-                    `"${record.timestamp}"`
-                ].join(',');
-                csvContent += row + "\n";
-            });
-
-            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `checkin_records_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    </script>
-</body>
-</html>
-
-</table>
-    </div>
-    </div>
-
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
 
@@ -712,36 +418,30 @@
         // =====================================================================
         // 1. FIREBASE CONFIGURATION (การตั้งค่า FIREBASE)
         // =====================================================================
-        // !! สำคัญ: วาง Firebase Config ที่คัดลอกมา ตรงนี้ !!
-	const firebaseConfig = {
-  		apiKey: "AIzaSyAL_C2PN82y0k1iqc3rzOrqYdxynN7qd3A",
-  		authDomain: "checkin-164e0.firebaseapp.com",
-  		projectId: "checkin-164e0",
-  		storageBucket: "checkin-164e0.firebasestorage.app",
-  		messagingSenderId: "83157183999",
-  		appId: "1:83157183999:web:725c993e0b9e0f6100cbca",
-  		measurementId: "G-WL6LHGYZTQ"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyAL_C2PN82y0k1iqc3rzOrqYdxynN7qd3A",
+            authDomain: "checkin-164e0.firebaseapp.com",
+            projectId: "checkin-164e0",
+            storageBucket: "checkin-164e0.appspot.com",
+            messagingSenderId: "83157183999",
+            appId: "1:83157183999:web:725c993e0b9e0f6100cbca"
+        };
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const checkinCollection = db.collection('checkinRecords');
-	const app = initializeApp(firebaseConfig);
-	const analytics = getAnalytics(app);
-        
-        let localCheckinRecords = []; // ใช้เก็บข้อมูลที่ดึงมาแสดงผล
-        let editingDocId = null; // ใช้เก็บ ID ของเอกสารที่กำลังแก้ไข
+
+        let localCheckinRecords = [];
+        let editingDocId = null;
 
         // =====================================================================
         // 2. DATA HANDLING (การจัดการข้อมูล)
         // =====================================================================
 
-        // โหลดข้อมูลจาก Firestore เมื่อเปิดหน้า
         window.addEventListener('load', function() {
             document.getElementById('checkinDate').valueAsDate = new Date();
             
-            // ใช้ onSnapshot เพื่อให้ข้อมูลอัพเดทแบบ Real-time
             checkinCollection.orderBy('checkinDate', 'desc').onSnapshot(snapshot => {
                 localCheckinRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 updateRecordsTable();
@@ -751,7 +451,6 @@
             });
         });
         
-        // ฟังก์ชันบันทึกข้อมูล (เพิ่ม/อัพเดท)
         document.getElementById('checkinForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -765,18 +464,14 @@
                 checkinDate,
                 manday,
                 traveling,
-                timestamp: new Date().toISOString() // ใช้ ISO string เพื่อให้เรียงลำดับได้
+                timestamp: new Date().toISOString()
             };
 
             try {
                 if (editingDocId) {
-                    // อัพเดทข้อมูลเดิม
                     await checkinCollection.doc(editingDocId).update(record);
                     alert('อัพเดทข้อมูลเรียบร้อยแล้ว!');
-                    editingDocId = null;
-                    document.querySelector('.btn-primary').textContent = 'บันทึกข้อมูล';
                 } else {
-                    // เพิ่มข้อมูลใหม่
                     await checkinCollection.add(record);
                     alert('บันทึกข้อมูลเรียบร้อยแล้ว!');
                 }
@@ -787,7 +482,6 @@
             }
         });
 
-        // ฟังก์ชันล้างฟอร์ม
         function clearForm() {
             document.getElementById('checkinForm').reset();
             document.getElementById('checkinDate').valueAsDate = new Date();
@@ -795,7 +489,6 @@
             document.querySelector('.btn-primary').textContent = 'บันทึกข้อมูล';
         }
 
-        // ฟังก์ชันอัพเดทตาราง
         function updateRecordsTable() {
             const tbody = document.getElementById('recordsTableBody');
             tbody.innerHTML = '';
@@ -803,7 +496,6 @@
             localCheckinRecords.forEach(record => {
                 const row = tbody.insertRow();
                 const checkinDate = new Date(record.checkinDate);
-                // เพิ่มเวลา UTC offset ของไทย (+7) เพื่อให้แสดงวันที่ถูกต้อง
                 checkinDate.setMinutes(checkinDate.getMinutes() + checkinDate.getTimezoneOffset() + 420);
 
                 row.innerHTML = `
@@ -820,15 +512,14 @@
             });
         }
 
-        // ฟังก์ชันแก้ไขข้อมูล
         async function editRecord(docId) {
             try {
-                const doc = await checkinCollection.doc(docId).get();
-                if (!doc.exists) {
+                const docSnap = await checkinCollection.doc(docId).get();
+                if (!docSnap.exists) {
                     alert('ไม่พบข้อมูลที่ต้องการแก้ไข!');
                     return;
                 }
-                const record = doc.data();
+                const record = docSnap.data();
                 document.getElementById('employeeName').value = record.employeeName;
                 document.getElementById('checkinDate').value = record.checkinDate;
                 document.getElementById('manday').checked = record.manday;
@@ -843,13 +534,11 @@
             }
         }
 
-        // ฟังก์ชันลบข้อมูล
         async function deleteRecord(docId) {
             if (confirm('คุณต้องการลบข้อมูลนี้หรือไม่?')) {
                 try {
                     await checkinCollection.doc(docId).delete();
                     alert('ลบข้อมูลเรียบร้อยแล้ว!');
-                    // onSnapshot จะอัพเดทตารางให้เอง
                 } catch (error) {
                     console.error("เกิดข้อผิดพลาดในการลบข้อมูล: ", error);
                 }
@@ -857,8 +546,7 @@
         }
 
         // =====================================================================
-        // 3. UTILITY & SUMMARY FUNCTIONS (ฟังก์ชันเสริมและสรุปผล)
-        // (ส่วนนี้ใช้ข้อมูลจาก localCheckinRecords ที่ซิงค์มาแล้ว)
+        // 3. UTILITY & SUMMARY FUNCTIONS
         // =====================================================================
 
         function setCurrentDateTime() {
@@ -961,6 +649,6 @@
             document.body.removeChild(link);
         }
     </script>
-    </body>
-</html>
 
+</body>
+</html>
