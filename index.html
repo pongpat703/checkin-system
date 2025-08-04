@@ -1,480 +1,95 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบันทึกการ Check In</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(45deg, #4CAF50, #45a049);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        .form-section {
-            padding: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-            font-size: 1.1em;
-        }
-
-        .form-group select,
-        .form-group input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1em;
-            transition: all 0.3s ease;
-            background: white;
-        }
-
-        .form-group select:focus,
-        .form-group input:focus {
-            outline: none;
-            border-color: #4CAF50;
-            box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
-        }
-
-        .checkbox-group {
-            display: flex;
-            gap: 30px;
-            flex-wrap: wrap;
-        }
-
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .checkbox-item input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            accent-color: #4CAF50;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-top: 30px;
-        }
-
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(45deg, #4CAF50, #45a049);
-            color: white;
-        }
-
-        .btn-secondary {
-            background: linear-gradient(45deg, #2196F3, #1976D2);
-            color: white;
-        }
-
-        .btn-info {
-            background: linear-gradient(45deg, #FF9800, #F57C00);
-            color: white;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .records-section {
-            padding: 30px;
-            border-top: 1px solid #e0e0e0;
-            background: #f8f9fa;
-        }
-
-        .records-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .records-table th,
-        .records-table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .records-table th {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            font-weight: 600;
-        }
-
-        .records-table tr:hover {
-            background: #f5f5f5;
-        }
-
-        .edit-btn, .delete-btn {
-            padding: 5px 10px;
-            margin: 2px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.8em;
-        }
-
-        .edit-btn {
-            background: #2196F3;
-            color: white;
-        }
-
-        .delete-btn {
-            background: #f44336;
-            color: white;
-        }
-
-        .summary-section {
-            padding: 20px;
-            background: linear-gradient(45deg, #e3f2fd, #bbdefb);
-            margin: 20px 0;
-            border-radius: 10px;
-            border-left: 5px solid #2196F3;
-        }
-
-        .summary-title {
-            font-size: 1.3em;
-            font-weight: 600;
-            color: #1976D2;
-            margin-bottom: 15px;
-        }
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-
-        .summary-card {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .summary-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .employee-card {
-            background: white;
-            padding: 12px;
-            border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 10px;
-            align-items: center;
-            font-size: 0.9em;
-        }
-
-        .employee-name {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .employee-stat {
-            text-align: center;
-            padding: 5px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
-        .stat-checkin { background: #e3f2fd; color: #1976d2; }
-        .stat-manday { background: #e8f5e8; color: #4caf50; }
-        .stat-travel { background: #fff3e0; color: #ff9800; }
-
-        .summary-number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #4CAF50;
-        }
-
-        .summary-label {
-            color: #666;
-            margin-top: 5px;
-        }
-
-        @media (max-width: 600px) {
-            .checkbox-group {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .button-group {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>📋 ระบบบันทึกการ Check In</h1>
-            <p>ระบบจัดการการเข้างานรายวัน</p>
-        </div>
-
-        <div class="form-section">
-            <h2>บันทึกการ Check In</h2>
-            <form id="checkinForm">
-                <div class="form-group">
-                    <label for="employeeName">ชื่อพนักงาน:</label>
-                    <select id="employeeName" required>
-                        <option value="">เลือกชื่อพนักงาน</option>
-                        <option value="นายพงษ์พัฒน์ ศรีกัลยาณวัจน์">นายพงษ์พัฒน์ ศรีกัลยาณวัจน์</option>
-                        <option value="นายพิชญ์ วรัญญูผลิน">นายพิชญ์ วรัญญูผลิน</option>
-                        <option value="นายธนะรัชต์ มูลวงษ์">นายธนะรัชต์ มูลวงษ์</option>
-                        <option value="นางสาวกัญญาวีร์ ชินกลาง">นางสาวกัญญาวีร์ ชินกลาง</option>
-                        <option value="นางสาวอัญชลี บุญสุข">นางสาวอัญชลี บุญสุข</option>
-                        <option value="นายอนุสรณ์ ขมิ้นเครือ">นายอนุสรณ์ ขมิ้นเครือ</option>
-                        <option value="นายนาวี เศวตภาณุ">นายนาวี เศวตภาณุ</option>
-                        <option value="นายชัยมณ ถนอมมิตร">นายชัยมณ ถนอมมิตร</option>
-                        <option value="นายปณิธิ ช้างแรงการ">นายปณิธิ ช้างแรงการ</option>
-                        <option value="นายฐิติกรณ์ เอื้อถาวรธรรม">นายฐิติกรณ์ เอื้อถาวรธรรม</option>
-                        <option value="เสริมศักดิ์ บุญมั่งมี">เสริมศักดิ์ บุญมั่งมี</option>
-                        <option value="สมศักดิ์ คำแก้ว">สมศักดิ์ คำแก้ว</option>
-                        <option value="ศุภณัฐ เกศวารี">ศุภณัฐ เกศวารี</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="checkinDate">วันที่:</label>
-                    <input type="date" id="checkinDate" required>
-                </div>
-
-                <div class="form-group">
-                    <label>ประเภทการทำงาน:</label>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="manday">
-                            <label for="manday">Manday</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="traveling">
-                            <label for="traveling">Traveling</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="button-group">
-                    <button type="submit" class="btn btn-primary">บันทึกข้อมูล</button>
-                    <button type="button" class="btn btn-secondary" onclick="setCurrentDateTime()">บันทึกเวลาปัจจุบัน</button>
-                    <button type="button" class="btn btn-info" onclick="showSummary()">สรุปวันนี้</button>
-                    <button type="button" class="btn" onclick="showRangeSummary()" style="background: linear-gradient(45deg, #FF5722, #E64A19); color: white;">สรุปช่วงวันที่</button>
-                    <button type="button" class="btn" onclick="exportData()" style="background: linear-gradient(45deg, #9C27B0, #673AB7); color: white;">Export ข้อมูล</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="records-section">
-            <h2>รายการ Check In</h2>
-            <div id="summarySection" class="summary-section" style="display: none;">
-                <div class="summary-title">สรุปข้อมูลประจำวัน</div>
-                <div class="summary-grid">
-                    <div class="summary-card">
-                        <div class="summary-number" id="totalCheckins">0</div>
-                        <div class="summary-label">Check In ทั้งหมด</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-number" id="totalMandays">0</div>
-                        <div class="summary-label">Manday</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-number" id="totalTraveling">0</div>
-                        <div class="summary-label">Traveling</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Date Range Summary Section -->
-            <div id="rangeSummarySection" class="summary-section" style="display: none; background: linear-gradient(45deg, #f3e5f5, #e1bee7);">
-                <div class="summary-title" style="color: #7B1FA2;">สรุปข้อมูลช่วงวันที่</div>
-                
-                <!-- Date Range Selection -->
-                <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">วันที่เริ่มต้น:</label>
-                        <input type="date" id="startDate" style="padding: 8px; border: 2px solid #9C27B0; border-radius: 5px;">
-                    </div>
-                    <div>
-                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">วันที่สิ้นสุด:</label>
-                        <input type="date" id="endDate" style="padding: 8px; border: 2px solid #9C27B0; border-radius: 5px;">
-                    </div>
-                    <div style="align-self: flex-end;">
-                        <button onclick="calculateRangeSummary()" class="btn" style="background: linear-gradient(45deg, #9C27B0, #673AB7); color: white; padding: 10px 20px;">คำนวณ</button>
-                    </div>
-                </div>
-
-                <!-- Range Summary Cards -->
-                <div class="summary-grid">
-                    <div class="summary-card">
-                        <div class="summary-number" id="rangeCheckins">0</div>
-                        <div class="summary-label">Check In ทั้งหมด</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-number" id="rangeMandays">0</div>
-                        <div class="summary-label">Manday รวม</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-number" id="rangeTraveling">0</div>
-                        <div class="summary-label">Traveling รวม</div>
-                    </div>
-                    <div class="summary-card">
-                        <div class="summary-number" id="rangeDays">0</div>
-                        <div class="summary-label">จำนวนวัน</div>
-                    </div>
-                </div>
-
-                <!-- Detailed breakdown by employee -->
-                <div id="employeeBreakdown" style="margin-top: 20px;">
-                    <h3 style="color: #7B1FA2; margin-bottom: 15px;">รายละเอียดตามพนักงาน</h3>
-                    <div id="employeeBreakdownContent" style="display: grid; gap: 10px;">
-                        <!-- Employee breakdown will be inserted here -->
-                    </div>
-                </div>
-            </div>
-            <table class="records-table">
-                <thead>
-                    <tr>
-                        <th>ชื่อพนักงาน</th>
-                        <th>วันที่</th>
-                        <th>Manday</th>
-                        <th>Traveling</th>
-                        <th>เวลาบันทึก</th>
-                        <th>จัดการ</th>
-                    </tr>
-                </thead>
-                <tbody id="recordsTableBody">
-                </tbody>
-            </table>
-        </div>
+</table>
+    </div>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+
     <script>
-        let checkinRecords = JSON.parse(localStorage.getItem('checkinRecords')) || [];
-        let editingIndex = -1;
+        // =====================================================================
+        // 1. FIREBASE CONFIGURATION (การตั้งค่า FIREBASE)
+        // =====================================================================
+        // !! สำคัญ: วาง Firebase Config ที่คัดลอกมา ตรงนี้ !!
+	const firebaseConfig = {
+  		apiKey: "AIzaSyAL_C2PN82y0k1iqc3rzOrqYdxynN7qd3A",
+  		authDomain: "checkin-164e0.firebaseapp.com",
+  		projectId: "checkin-164e0",
+  		storageBucket: "checkin-164e0.firebasestorage.app",
+  		messagingSenderId: "83157183999",
+  		appId: "1:83157183999:web:725c993e0b9e0f6100cbca",
+  		measurementId: "G-WL6LHGYZTQ"
+};
 
-        // ตั้งค่าวันที่เป็นวันปัจจุบัน
-        document.getElementById('checkinDate').valueAsDate = new Date();
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const checkinCollection = db.collection('checkinRecords');
+	const app = initializeApp(firebaseConfig);
+	const analytics = getAnalytics(app);
         
-        // โหลดข้อมูลเมื่อเปิดหน้า
+        let localCheckinRecords = []; // ใช้เก็บข้อมูลที่ดึงมาแสดงผล
+        let editingDocId = null; // ใช้เก็บ ID ของเอกสารที่กำลังแก้ไข
+
+        // =====================================================================
+        // 2. DATA HANDLING (การจัดการข้อมูล)
+        // =====================================================================
+
+        // โหลดข้อมูลจาก Firestore เมื่อเปิดหน้า
         window.addEventListener('load', function() {
-            updateRecordsTable();
+            document.getElementById('checkinDate').valueAsDate = new Date();
+            
+            // ใช้ onSnapshot เพื่อให้ข้อมูลอัพเดทแบบ Real-time
+            checkinCollection.orderBy('checkinDate', 'desc').onSnapshot(snapshot => {
+                localCheckinRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateRecordsTable();
+                console.log("ข้อมูลอัพเดทจาก Firestore แล้ว!");
+            }, error => {
+                console.error("เกิดข้อผิดพลาดในการดึงข้อมูล: ", error);
+            });
         });
-
-        // ฟังก์ชันบันทึกเวลาปัจจุบัน
-        function setCurrentDateTime() {
-            const now = new Date();
-            document.getElementById('checkinDate').valueAsDate = now;
-            alert('ตั้งค่าเวลาเป็นปัจจุบันแล้ว: ' + now.toLocaleString('th-TH'));
-        }
-
-        // ฟังก์ชันบันทึกข้อมูล
-        document.getElementById('checkinForm').addEventListener('submit', function(e) {
+        
+        // ฟังก์ชันบันทึกข้อมูล (เพิ่ม/อัพเดท)
+        document.getElementById('checkinForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const employeeName = document.getElementById('employeeName').value;
             const checkinDate = document.getElementById('checkinDate').value;
             const manday = document.getElementById('manday').checked;
             const traveling = document.getElementById('traveling').checked;
-            const timestamp = new Date().toLocaleString('th-TH');
-
+            
             const record = {
                 employeeName,
                 checkinDate,
                 manday,
                 traveling,
-                timestamp
+                timestamp: new Date().toISOString() // ใช้ ISO string เพื่อให้เรียงลำดับได้
             };
 
-            if (editingIndex >= 0) {
-                checkinRecords[editingIndex] = record;
-                editingIndex = -1;
-                document.querySelector('.btn-primary').textContent = 'บันทึกข้อมูล';
-            } else {
-                checkinRecords.push(record);
+            try {
+                if (editingDocId) {
+                    // อัพเดทข้อมูลเดิม
+                    await checkinCollection.doc(editingDocId).update(record);
+                    alert('อัพเดทข้อมูลเรียบร้อยแล้ว!');
+                    editingDocId = null;
+                    document.querySelector('.btn-primary').textContent = 'บันทึกข้อมูล';
+                } else {
+                    // เพิ่มข้อมูลใหม่
+                    await checkinCollection.add(record);
+                    alert('บันทึกข้อมูลเรียบร้อยแล้ว!');
+                }
+                clearForm();
+            } catch (error) {
+                console.error("เกิดข้อผิดพลาดในการบันทึกข้อมูล: ", error);
+                alert("เกิดข้อผิดพลาด: " + error.message);
             }
-
-            // บันทึกลง Local Storage
-            localStorage.setItem('checkinRecords', JSON.stringify(checkinRecords));
-
-            updateRecordsTable();
-            clearForm();
-            alert('บันทึกข้อมูลเรียบร้อยแล้ว!');
         });
 
         // ฟังก์ชันล้างฟอร์ม
         function clearForm() {
-            document.getElementById('employeeName').value = '';
+            document.getElementById('checkinForm').reset();
             document.getElementById('checkinDate').valueAsDate = new Date();
-            document.getElementById('manday').checked = false;
-            document.getElementById('traveling').checked = false;
+            editingDocId = null;
+            document.querySelector('.btn-primary').textContent = 'บันทึกข้อมูล';
         }
 
         // ฟังก์ชันอัพเดทตาราง
@@ -482,84 +97,90 @@
             const tbody = document.getElementById('recordsTableBody');
             tbody.innerHTML = '';
 
-            checkinRecords.forEach((record, index) => {
+            localCheckinRecords.forEach(record => {
                 const row = tbody.insertRow();
+                const checkinDate = new Date(record.checkinDate);
+                // เพิ่มเวลา UTC offset ของไทย (+7) เพื่อให้แสดงวันที่ถูกต้อง
+                checkinDate.setMinutes(checkinDate.getMinutes() + checkinDate.getTimezoneOffset() + 420);
+
                 row.innerHTML = `
                     <td>${record.employeeName}</td>
-                    <td>${new Date(record.checkinDate).toLocaleDateString('th-TH')}</td>
+                    <td>${checkinDate.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })}</td>
                     <td>${record.manday ? '✅' : '❌'}</td>
                     <td>${record.traveling ? '✅' : '❌'}</td>
-                    <td>${record.timestamp}</td>
+                    <td>${new Date(record.timestamp).toLocaleString('th-TH')}</td>
                     <td>
-                        <button class="edit-btn" onclick="editRecord(${index})">แก้ไข</button>
-                        <button class="delete-btn" onclick="deleteRecord(${index})">ลบ</button>
+                        <button class="edit-btn" onclick="editRecord('${record.id}')">แก้ไข</button>
+                        <button class="delete-btn" onclick="deleteRecord('${record.id}')">ลบ</button>
                     </td>
                 `;
             });
         }
 
         // ฟังก์ชันแก้ไขข้อมูล
-        function editRecord(index) {
-            const record = checkinRecords[index];
-            document.getElementById('employeeName').value = record.employeeName;
-            document.getElementById('checkinDate').value = record.checkinDate;
-            document.getElementById('manday').checked = record.manday;
-            document.getElementById('traveling').checked = record.traveling;
-            
-            editingIndex = index;
-            document.querySelector('.btn-primary').textContent = 'อัพเดทข้อมูล';
-            
-            // เลื่อนไปที่ฟอร์ม
-            document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
+        async function editRecord(docId) {
+            try {
+                const doc = await checkinCollection.doc(docId).get();
+                if (!doc.exists) {
+                    alert('ไม่พบข้อมูลที่ต้องการแก้ไข!');
+                    return;
+                }
+                const record = doc.data();
+                document.getElementById('employeeName').value = record.employeeName;
+                document.getElementById('checkinDate').value = record.checkinDate;
+                document.getElementById('manday').checked = record.manday;
+                document.getElementById('traveling').checked = record.traveling;
+                
+                editingDocId = docId;
+                document.querySelector('.btn-primary').textContent = 'อัพเดทข้อมูล';
+                
+                document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                console.error("เกิดข้อผิดพลาดในการดึงข้อมูลเพื่อแก้ไข: ", error);
+            }
         }
 
         // ฟังก์ชันลบข้อมูล
-        function deleteRecord(index) {
+        async function deleteRecord(docId) {
             if (confirm('คุณต้องการลบข้อมูลนี้หรือไม่?')) {
-                checkinRecords.splice(index, 1);
-                localStorage.setItem('checkinRecords', JSON.stringify(checkinRecords));
-                updateRecordsTable();
-                alert('ลบข้อมูลเรียบร้อยแล้ว!');
+                try {
+                    await checkinCollection.doc(docId).delete();
+                    alert('ลบข้อมูลเรียบร้อยแล้ว!');
+                    // onSnapshot จะอัพเดทตารางให้เอง
+                } catch (error) {
+                    console.error("เกิดข้อผิดพลาดในการลบข้อมูล: ", error);
+                }
             }
         }
 
-        // ฟังก์ชันแสดงสรุปข้อมูล
+        // =====================================================================
+        // 3. UTILITY & SUMMARY FUNCTIONS (ฟังก์ชันเสริมและสรุปผล)
+        // (ส่วนนี้ใช้ข้อมูลจาก localCheckinRecords ที่ซิงค์มาแล้ว)
+        // =====================================================================
+
+        function setCurrentDateTime() {
+            document.getElementById('checkinDate').valueAsDate = new Date();
+        }
+
         function showSummary() {
             const summarySection = document.getElementById('summarySection');
             const selectedDate = document.getElementById('checkinDate').value;
+            if (!selectedDate) return alert('กรุณาเลือกวันที่');
             
-            if (!selectedDate) {
-                alert('กรุณาเลือกวันที่ที่ต้องการดูสรุป');
-                return;
-            }
-
-            // กรองข้อมูลตามวันที่ที่เลือก
-            const dateRecords = checkinRecords.filter(record => record.checkinDate === selectedDate);
-            
-            const totalCheckins = dateRecords.length;
-            const totalMandays = dateRecords.filter(record => record.manday).length;
-            const totalTraveling = dateRecords.filter(record => record.traveling).length;
-
-            document.getElementById('totalCheckins').textContent = totalCheckins;
-            document.getElementById('totalMandays').textContent = totalMandays;
-            document.getElementById('totalTraveling').textContent = totalTraveling;
+            const dateRecords = localCheckinRecords.filter(r => r.checkinDate === selectedDate);
+            document.getElementById('totalCheckins').textContent = dateRecords.length;
+            document.getElementById('totalMandays').textContent = dateRecords.filter(r => r.manday).length;
+            document.getElementById('totalTraveling').textContent = dateRecords.filter(r => r.traveling).length;
 
             summarySection.style.display = 'block';
             summarySection.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // ฟังก์ชันแสดงสรุปข้อมูลช่วงวันที่
         function showRangeSummary() {
             const rangeSummarySection = document.getElementById('rangeSummarySection');
-            const summarySection = document.getElementById('summarySection');
-            
-            // ซ่อนสรุปรายวัน
-            summarySection.style.display = 'none';
-            
-            // แสดงส่วนสรุปช่วงวันที่
+            document.getElementById('summarySection').style.display = 'none';
             rangeSummarySection.style.display = 'block';
             
-            // ตั้งค่าวันที่เริ่มต้นเป็น 7 วันที่แล้ว และวันสิ้นสุดเป็นวันนี้
             const today = new Date();
             const weekAgo = new Date(today);
             weekAgo.setDate(today.getDate() - 7);
@@ -567,123 +188,62 @@
             document.getElementById('startDate').valueAsDate = weekAgo;
             document.getElementById('endDate').valueAsDate = today;
             
-            // คำนวณทันที
             calculateRangeSummary();
-            
             rangeSummarySection.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // ฟังก์ชันคำนวณสรุปช่วงวันที่
         function calculateRangeSummary() {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
-            
-            if (!startDate || !endDate) {
-                alert('กรุณาเลือกวันที่เริ่มต้นและสิ้นสุด');
-                return;
+            if (!startDate || !endDate || new Date(startDate) > new Date(endDate)) {
+                return alert('กรุณาเลือกช่วงวันที่ให้ถูกต้อง');
             }
             
-            if (new Date(startDate) > new Date(endDate)) {
-                alert('วันที่เริ่มต้นต้องไม่เกินวันที่สิ้นสุด');
-                return;
-            }
-            
-            // กรองข้อมูลตามช่วงวันที่
-            const rangeRecords = checkinRecords.filter(record => {
-                const recordDate = new Date(record.checkinDate);
+            const rangeRecords = localCheckinRecords.filter(r => {
+                const recordDate = new Date(r.checkinDate);
                 return recordDate >= new Date(startDate) && recordDate <= new Date(endDate);
             });
             
-            // คำนวณสรุปรวม
-            const totalCheckins = rangeRecords.length;
-            const totalMandays = rangeRecords.filter(record => record.manday).length;
-            const totalTraveling = rangeRecords.filter(record => record.traveling).length;
-            
-            // คำนวณจำนวนวัน
+            document.getElementById('rangeCheckins').textContent = rangeRecords.length;
+            document.getElementById('rangeMandays').textContent = rangeRecords.filter(r => r.manday).length;
+            document.getElementById('rangeTraveling').textContent = rangeRecords.filter(r => r.traveling).length;
             const daysDiff = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
-            
-            // อัพเดทการแสดงผล
-            document.getElementById('rangeCheckins').textContent = totalCheckins;
-            document.getElementById('rangeMandays').textContent = totalMandays;
-            document.getElementById('rangeTraveling').textContent = totalTraveling;
             document.getElementById('rangeDays').textContent = daysDiff;
             
-            // สร้างรายละเอียดตามพนักงาน
             createEmployeeBreakdown(rangeRecords);
         }
 
-        // ฟังก์ชันสร้างรายละเอียดตามพนักงาน
         function createEmployeeBreakdown(rangeRecords) {
             const employeeBreakdownContent = document.getElementById('employeeBreakdownContent');
-            
-            // จัดกลุ่มข้อมูลตามพนักงาน
             const employeeStats = {};
-            
             rangeRecords.forEach(record => {
                 if (!employeeStats[record.employeeName]) {
-                    employeeStats[record.employeeName] = {
-                        checkins: 0,
-                        mandays: 0,
-                        traveling: 0
-                    };
+                    employeeStats[record.employeeName] = { checkins: 0, mandays: 0, traveling: 0 };
                 }
-                
                 employeeStats[record.employeeName].checkins++;
                 if (record.manday) employeeStats[record.employeeName].mandays++;
                 if (record.traveling) employeeStats[record.employeeName].traveling++;
             });
             
-            // สร้าง HTML สำหรับแสดงผล
-            let html = '';
-            
+            let html = `<div class="employee-card" style="background: linear-gradient(45deg, #9C27B0, #673AB7); color: white;"><div class="employee-name">ชื่อพนักงาน</div><div style="text-align: center; font-weight: bold;">Check In</div><div style="text-align: center; font-weight: bold;">Manday</div><div style="text-align: center; font-weight: bold;">Traveling</div></div>`;
             if (Object.keys(employeeStats).length === 0) {
                 html = '<p style="text-align: center; color: #666; padding: 20px;">ไม่มีข้อมูลในช่วงวันที่ที่เลือก</p>';
             } else {
-                // Header
-                html += `
-                    <div class="employee-card" style="background: linear-gradient(45deg, #9C27B0, #673AB7); color: white;">
-                        <div class="employee-name">ชื่อพนักงาน</div>
-                        <div style="text-align: center; font-weight: bold;">Check In</div>
-                        <div style="text-align: center; font-weight: bold;">Manday</div>
-                        <div style="text-align: center; font-weight: bold;">Traveling</div>
-                    </div>
-                `;
-                
-                // Data rows
-                Object.entries(employeeStats)
-                    .sort(([a], [b]) => a.localeCompare(b, 'th'))
-                    .forEach(([name, stats]) => {
-                        html += `
-                            <div class="employee-card">
-                                <div class="employee-name">${name}</div>
-                                <div class="employee-stat stat-checkin">${stats.checkins}</div>
-                                <div class="employee-stat stat-manday">${stats.mandays}</div>
-                                <div class="employee-stat stat-travel">${stats.traveling}</div>
-                            </div>
-                        `;
-                    });
+                 Object.entries(employeeStats).sort(([a], [b]) => a.localeCompare(b, 'th')).forEach(([name, stats]) => {
+                    html += `<div class="employee-card"><div class="employee-name">${name}</div><div class="employee-stat stat-checkin">${stats.checkins}</div><div class="employee-stat stat-manday">${stats.mandays}</div><div class="employee-stat stat-travel">${stats.traveling}</div></div>`;
+                });
             }
-            
             employeeBreakdownContent.innerHTML = html;
         }
 
-        // ฟังก์ชัน Export ข้อมูล
         function exportData() {
-            if (checkinRecords.length === 0) {
-                alert('ไม่มีข้อมูลสำหรับ Export');
-                return;
-            }
-
-            let csvContent = "ชื่อพนักงาน,วันที่,Manday,Traveling,เวลาบันทึก\n";
+            if (localCheckinRecords.length === 0) return alert('ไม่มีข้อมูลสำหรับ Export');
             
-            checkinRecords.forEach(record => {
-                const row = [
-                    `"${record.employeeName}"`,
-                    `"${new Date(record.checkinDate).toLocaleDateString('th-TH')}"`,
-                    record.manday ? 'ใช่' : 'ไม่ใช่',
-                    record.traveling ? 'ใช่' : 'ไม่ใช่',
-                    `"${record.timestamp}"`
-                ].join(',');
+            let csvContent = "ชื่อพนักงาน,วันที่,Manday,Traveling,เวลาบันทึก\n";
+            localCheckinRecords.forEach(record => {
+                const checkinDate = new Date(record.checkinDate);
+                checkinDate.setMinutes(checkinDate.getMinutes() + checkinDate.getTimezoneOffset() + 420);
+                const row = [`"${record.employeeName}"`, `"${checkinDate.toLocaleDateString('th-TH')}"`, record.manday ? 'ใช่' : 'ไม่ใช่', record.traveling ? 'ใช่' : 'ไม่ใช่', `"${new Date(record.timestamp).toLocaleString('th-TH')}"`].join(',');
                 csvContent += row + "\n";
             });
 
@@ -698,5 +258,5 @@
             document.body.removeChild(link);
         }
     </script>
-</body>
+    </body>
 </html>
